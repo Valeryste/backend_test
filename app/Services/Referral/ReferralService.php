@@ -4,6 +4,8 @@ namespace App\Services\Referral;
 
 use App\Models\Master;
 use App\Models\Referral;
+use App\Models\ReferralEarning;
+use Illuminate\Support\Collection;
 
 class ReferralService
 {
@@ -45,5 +47,24 @@ class ReferralService
         $percent = (int) config('referral.percent');
 
         return (int) round($paymentAmount * $percent);
+    }
+
+    public function my(Master $referrer): Collection
+    {
+        return $referrer->referrals()
+            ->withSum('referralEarnings as earned', 'amount')
+            ->get();
+    }
+
+    public function earnings(Master $referrer): array
+    {
+        $referralEarnings = $referrer->referralEarnings();
+
+        return [
+            'total' => $referralEarnings->sum('amount'),
+            'pending' => $referralEarnings->where('status', ReferralEarning::STATUS_PENDING)->sum('amount'),
+            'paid' =>  $referralEarnings->where('status', ReferralEarning::STATUS_PAID)->sum('amount'),
+            'referrals_rewarded' => $referrer->referrals()->where('status', Referral::STATUS_REWARDED)->count(),
+        ];
     }
 }

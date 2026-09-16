@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Привязка приведённого мастера к тому, кто его привёл.
@@ -27,6 +28,7 @@ class Referral extends Model
     protected $fillable = [
         'referrer_master_id',
         'referred_master_id',
+        'program',
         'status',
     ];
 
@@ -47,6 +49,11 @@ class Referral extends Model
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('status', self::STATUS_REWARDED);
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function referralEarnings(): HasMany
+    {
+        return $this->hasMany(ReferralEarning::class);
     }
 }
