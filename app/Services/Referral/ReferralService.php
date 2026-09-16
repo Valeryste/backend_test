@@ -52,8 +52,15 @@ class ReferralService
     public function my(Master $referrer): Collection
     {
         return $referrer->referrals()
+            ->with('referredMaster:id,name')
             ->withSum('referralEarnings as earned', 'amount')
-            ->get();
+            ->get()
+            ->map(fn (Referral $referral) => [
+                'name'       => $referral->referredMaster->name,
+                'attached_at' => $referral->created_at,
+                'is_rewarded' => $referral->status === Referral::STATUS_REWARDED,
+                'earned'      => $referral->earned
+            ]);
     }
 
     public function earnings(Master $referrer): array
